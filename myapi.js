@@ -4,7 +4,25 @@ var express = require('express');
 var app = express();
 
 var inputs = [ { pin: '11', gpio: '17', value: 1 },
-               { pin: '12', gpio: '18', value: 0 } ];
+               { pin: '12', gpio: '18', value: 0 },
+               { pin: '17', gpio: '23', value: 0 } ];
+
+var Gpio = require('onoff').Gpio,
+    led = new Gpio(17, 'out'),
+    button = new Gpio(23, 'in', 'both');
+
+button.watch(function(err, value) {
+    if (err) exit();
+    led.writeSync(value);
+});
+
+function exit() {
+    led.unexport();
+    button.unexport();
+    process.exit();
+}
+
+process.on('SIGINT', exit);
 
 app.configure(function() {
     app.use(express.favicon());
